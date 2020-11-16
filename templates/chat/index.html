@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block page_content %}
+        {%  load static %}
+<style>
+    label {
+        font-family: PoliteType, Courier, "Liberation Serif";
+        font-size: larger;
+    }
+</style>
+<body>
+<br>
+{% load static %}
+<div class="container">
+    <div class="col card shadow">
+    <br>
+        <label>Hi {{ user }},
+    what chat room would you like to enter?</label><br>
+    <p>Disclaimer: Currently we only have "KOTI" room available.</p>
+    <div class="form-group">
+      <label for="sel1">Select room from the list:</label>
+        <select class="form-control" id="sel1">
+            {% for room_name in rooms %}
+                <option id="room-name-input" value="{{ room_name }}">{{ room_name }}</option>
+            {% endfor %}
+        </select>
+    <br>
+            <input id="room-name-submit" type="button" value="Enter"><br>
+    </div>
+
+
+{#        <input id="room-name-input" type="text" placeholder="type room here and press Enter... ">#}
+{#        <input id="room-name-submit" type="button" value="Enter"><br>#}
+    </div>
+</div>
+    <script>
+        document.querySelector('#room-name-input').focus();
+        document.querySelector('#room-name-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#room-name-submit').click();
+            }
+        };
+
+        document.querySelector('#room-name-submit').onclick = function(e) {
+            var roomName = document.querySelector('#room-name-input').value;
+            window.location.pathname = '/chat/' + roomName + '/';
+        };
+    </script>
+</body>
+{% endblock %}

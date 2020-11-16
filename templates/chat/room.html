@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block page_content %}
+        {%  load static %}
+<style>
+        h2, h3, textarea {
+        font-family: PoliteType, Courier, "Liberation Serif";
+    }
+</style>
+<body>
+<br>
+<div class="container">
+    <div class="col card shadow">
+        <div class="row">
+         <small>Current room members are:
+            {% for user in members %}
+               {{ user }}
+            {% endfor %}
+         </small>
+        </div>
+
+        <h2>{{ room_name }} - {{ request.user.username }}</h2>
+        <textarea id="chat-log"  cols="100"  rows="15"></textarea><br>
+        <br>
+        <input id="chat-message-input" type="text" size="100"><br>
+
+        <div class="row">
+            <div class="col-2 offset-2">
+                <input id="chat-message-submit" type="button" value="Lähetä chattiin">
+            </div>
+            <div class="col-2 offset-3">
+                <a href="{% url 'logout' %}" class="btn btn-default btn-sm">Poistu chatistä</a>
+            </div>
+        </div>
+        <br>
+        {{ room_name|json_script:"room-name" }}
+        {{ request.user.username|json_script:"user_username" }}
+
+    </div>
+</div>
+    <script>
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+        const user_username = JSON.parse(document.getElementById('user_username').textContent);
+
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chat/'
+            + roomName
+            + '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            document.querySelector('#chat-log').value += (data.username + ': ' + data.message + '\n');
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'username': user_username,
+            }));
+            messageInputDom.value = '';
+        };
+    </script>
+
+</body>
+{% endblock %}
